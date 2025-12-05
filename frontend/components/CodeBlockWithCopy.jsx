@@ -6,7 +6,7 @@ export default function CodeBlockWithCopy({ text }) {
   const handleCopy = () => {
     navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => setCopied(false), 200);
+    setTimeout(() => setCopied(false), 1000);
   };
 
   return (

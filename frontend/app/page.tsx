@@ -128,7 +128,7 @@ export default function Home() {
             )
           }
 
-          {
+          {/* {
             (curlCommand != '') && (<Button
               onClick={runCurlCommand}
               aria-label="Submit"
@@ -136,8 +136,8 @@ export default function Home() {
             >
               Run curl command
             </Button>)
-          }
-          {
+          } */}
+          {/* {
             (curlRunOutput != null) && (
               <div className="w-full mt-8">
                 <label className="block mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -147,7 +147,7 @@ export default function Home() {
                 <CodeBlockWithCopy text={curlRunOutput.stdout == '' ? curlRunOutput.stderr : curlRunOutput.stdout}/>
               </div>
             )
-          }
+          } */}
 
 
         </div>
