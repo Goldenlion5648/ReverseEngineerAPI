@@ -12,7 +12,7 @@ export interface CurlResult {
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
-  const [curlCommand, setCurlCommand] = useState('curl www.google.com')
+  const [curlCommand, setCurlCommand] = useState('')
   const [curlRunOutput, setCurlRunOutput] = useState<CurlResult | null>(null)
   const [apiDescription, setApiDescription] = useState('')
   const [isRequestActive, setIsRequestActive] = useState(false);
