@@ -1,14 +1,19 @@
 "use client"
-import Image from "next/image";
-import { Textarea } from "@/components/ui/textarea"
-import { useCallback, useState, useEffect } from "react";
+import CodeBlockWithCopy from "@/components/CodeBlockWithCopy";
 import DropFileInput from "@/components/DropFileInput";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
 
+export interface CurlResult {
+  stdout : string,
+  stderr : string,
+}
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
-  const [curlResult, setCurlResult] = useState('')
+  const [curlCommand, setCurlCommand] = useState('curl www.google.com')
+  const [curlRunOutput, setCurlRunOutput] = useState<CurlResult | null>(null)
   const [apiDescription, setApiDescription] = useState('')
   const [isRequestActive, setIsRequestActive] = useState(false);
 
@@ -20,7 +25,7 @@ export default function Home() {
 
   const runReverseAPI = async () => {
     setIsRequestActive(true)
-    setCurlResult('')
+    setCurlCommand('')
     let fileText = await file?.text();
     console.log("sending request")
     const response = await fetch("http://localhost:8000/api/reverse-api",
@@ -33,9 +38,30 @@ export default function Home() {
         })
       }
     )
-    const newCurlResult = await response.json()
+    const newCurlCommand = await response.json()
     setIsRequestActive(false)
-    setCurlResult(newCurlResult["response"].replaceAll(" -H ", "\\\n  -H "))
+    setCurlCommand(newCurlCommand["response"].replaceAll(" -H ", "\\\n  -H "))
+
+  }
+
+  const runCurlCommand = async () => {
+    console.log("running command")
+    const response = await fetch("http://localhost:8000/api/run-curl",
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: curlCommand
+        })
+      }
+    )
+    const newCurlCommandRunResult = await response.json()
+    let newValue: CurlResult = {
+      stdout: newCurlCommandRunResult["result"]["stdout"],
+      stderr: newCurlCommandRunResult["result"]["stderr"]
+    }
+    console.log(newCurlCommandRunResult)
+    setCurlRunOutput(newValue);
 
   }
 
@@ -91,48 +117,34 @@ export default function Home() {
             </p>
           )}
           {
-            curlResult !== '' && (
+            curlCommand !== '' && (
               <div className="w-full mt-8">
                 <label className="block mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Generated cURL Command:
                 </label>
 
-                <div className="
-                      relative
-                      rounded-lg
-                      bg-zinc-900 text-zinc-100
-                      dark:bg-zinc-800
-                      p-4
-                      font-mono text-sm
-                      shadow-md
-                      overflow-x-auto    // horizontal scroll for long lines
-                      max-h-[400px]      // optional max height to prevent excessive growth
-                      overflow-y-auto    // vertical scroll if max height is exceeded
-                      wrap-break-word        // wrap long words if needed
-                      whitespace-pre-wrap
-                    ">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(curlResult)
-                      setCopyClicked(true)
-                    }}
-                    className="
-                      sticky top-2 right-2
-                      z-10
-                      text-xs
-                      px-2 py-1
-                      rounded-md
-                      bg-zinc-700 hover:bg-zinc-600
-                      transition
-                      text-white
-                      float-right
-                    "
-                  >
-                    {copyClicked ? "Copied!" : "Copy"}
-                  </button>
+                <CodeBlockWithCopy text={curlCommand}/>
+              </div>
+            )
+          }
 
-                  {curlResult}
-                </div>
+          {
+            (curlCommand != '') && (<Button
+              onClick={runCurlCommand}
+              aria-label="Submit"
+              className="rounded-xl px-6 py-3 text-lg font-medium shadow-md hover:shadow-lg transition active:scale-95"
+            >
+              Run curl command
+            </Button>)
+          }
+          {
+            (curlRunOutput != null) && (
+              <div className="w-full mt-8">
+                <label className="block mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Generated cURL Command:
+                </label>
+
+                <CodeBlockWithCopy text={curlRunOutput.stdout == '' ? curlRunOutput.stderr : curlRunOutput.stdout}/>
               </div>
             )
           }

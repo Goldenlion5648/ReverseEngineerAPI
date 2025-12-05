@@ -28,6 +28,9 @@ class ReverseAPIRequest(BaseModel):
     har_data: str
     api_description: str
 
+class CurlCommand(BaseModel):
+    command: str
+
 
 @app.post("/api/reverse-api")
 def reverse_api(request: ReverseAPIRequest):
@@ -37,13 +40,13 @@ def reverse_api(request: ReverseAPIRequest):
     }
 
 @app.post("/api/run-curl")
-def run_curl_command(curl_command: str):
-    result = subprocess.run(curl_command, shell=True)
+def run_curl_command(curl_command: CurlCommand):
+    print("command was", curl_command)
+    result = subprocess.run(curl_command.command, shell=True, capture_output=True)
     return {
-        "response" : result
+        "stdout" : result.stdout.decode(),
+        "stderr" : result.stderr.decode()
     }
-
-
 
 def parse_har_with_llm(har_data: str, api_description: str) -> str:
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
